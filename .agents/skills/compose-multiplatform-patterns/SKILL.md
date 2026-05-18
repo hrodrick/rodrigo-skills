@@ -263,25 +263,67 @@ activeItems.forEach { item ->
 
 ## Theming
 
-### Material 3 Dynamic Theming
+### use Material 3 Theming as base
 
 ```kotlin
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            if (darkTheme) dynamicDarkColorScheme(LocalContext.current)
-            else dynamicLightColorScheme(LocalContext.current)
-        }
         darkTheme -> darkColorScheme()
         else -> lightColorScheme()
     }
+    
+    CompositionLocalProvider (
+        LocalExtendedColorScheme provides extendedColorsScheme,
+    ) {
+        MaterialTheme(colorScheme = colorScheme, content = content)
+    }
+}
+```
 
-    MaterialTheme(colorScheme = colorScheme, content = content)
+### use ExtendedColorScheme for custom colors outside MaterialTheme's ColorScheme (e.g. for charts, maps, etc.)
+
+@Immutable
+data class ExtendedColorScheme(
+    val xColor: Color,
+    val yColor: Color,
+)
+
+```kotlin
+val extendedColorsLight = ExtendedColorScheme(
+    // ...
+)
+
+val extendedColorsDark = ExtendedColorScheme(
+    // ...
+)
+
+val LocalExtendedColorScheme = compositionLocalOf { extendedColorsLight }
+```
+
+### Use Theme.* to avoid coupling the app to MaterialTheme references.
+
+```kotlin
+object Theme {
+    val colorScheme: ColorScheme
+        @Composable
+        get() = MaterialTheme.colorScheme
+
+    val typography: androidx.compose.material3.Typography
+        @Composable
+        get() = MaterialTheme.typography
+
+    val shapes: Shapes
+        @Composable
+        get() = MaterialTheme.shapes
+
+    val extendedColorsScheme: ExtendedColorScheme
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalExtendedColorScheme.current
 }
 ```
 
