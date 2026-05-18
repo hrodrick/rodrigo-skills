@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "compose-multiplatform-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/compose-multiplatform-patterns/SKILL.md",
+      "computedHash": "bb1c2a3397b144a0a5ac4f6c4bcb44514ec52a7020becd794eeceb62eee69b0d"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
