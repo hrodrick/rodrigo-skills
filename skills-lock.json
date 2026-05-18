@@ -1,10 +1,10 @@
 {
   "version": 1,
   "skills": {
-    "android-clean-architecture": {
+    "kmp-clean-architecture": {
       "source": "affaan-m/everything-claude-code",
       "sourceType": "github",
-      "skillPath": "skills/android-clean-architecture/SKILL.md",
+      "skillPath": "skills/kmp-clean-architecture/SKILL.md",
       "computedHash": "877b63dfe31ec4d864c0a09ead442029a236def32fd2a7fd374083a27b4fa5ba"
     },
     "compose-multiplatform-patterns": {
