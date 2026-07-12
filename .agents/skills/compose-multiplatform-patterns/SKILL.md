@@ -187,7 +187,7 @@ Text(
 
 ## KMP Platform-Specific UI
 
-### expect/actual for Platform Composables
+### expect/actual for Platform Composables (avoid where possible)
 
 ```kotlin
 // commonMain
@@ -263,7 +263,7 @@ activeItems.forEach { item ->
 
 ## Theming
 
-### use Material 3 Theming as base
+### Set up AppTheme with Material 3 Theming as base
 
 ```kotlin
 @Composable
@@ -306,6 +306,8 @@ val LocalExtendedColorScheme = compositionLocalOf { extendedColorsLight }
 
 ### Use Theme.* to avoid coupling the app to MaterialTheme references.
 
+Important: Theme is a wrapper around MaterialTheme to avoid calling MaterialTheme from our composables.
+
 ```kotlin
 object Theme {
     val colorScheme: ColorScheme
@@ -331,11 +333,11 @@ object Theme {
 
 - Using `mutableStateOf` in ViewModels when `MutableStateFlow` with `collectAsStateWithLifecycle` is safer for lifecycle
 - Passing `NavController` deep into composables — pass lambda callbacks instead
+- having too many lambda callbacks on the same function - Wrap the callbacks in 1 callback with a sealed event interface parameter (where each previous callback is an "event" implementing this interface, could be NavigationEvents or UIActionEvents)
 - Heavy computation inside `@Composable` functions — move to ViewModel or `remember {}`
-- Using `LaunchedEffect(Unit)` as a substitute for ViewModel init — it re-runs on configuration change in some setups
-- Creating new object instances in composable parameters — causes unnecessary recomposition
+- Using `LaunchedEffect(Unit)` as a substitute for ViewModel init — Use viewModel's init.
+- Creating new object instances in composable parameters — causes unnecessary recomposition.
 
 ## References
 
-See skill: `android-clean-architecture` for module structure and layering.
-See skill: `kotlin-coroutines-flows` for coroutine and Flow patterns.
+See skill: `kmp-clean-architecture` for module structure and layering.
