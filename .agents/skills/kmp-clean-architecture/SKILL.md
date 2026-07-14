@@ -18,25 +18,28 @@ Clean Architecture patterns for Kotlin Multiplatform projects. Covers module bou
 
 ## Module Structure
 
-### Recommended modules Layout
+### Current Project Layout
 
 ```
-project/            # Root project
-├── shared/         # Main shared module with common code
-├── app-android/    # Android application module
-├── app-ios/        # iOS application module
-├── app-web/        # Web application module
-├── app-desktop/    # Desktop application module
-└── server/         # Server-side module
+project/                  # Root project
+├── app/                  # Frontend/Client application container
+│   ├── shared/           # Primary code container, Shared across each platform, and divided into several sub-modules
+│   ├── androidApp/       # Android application module
+│   ├── iosApp/           # iOS application (SwiftUI entry point)
+│   ├── webApp/           # Web application (Wasm/JS)
+│   └── desktopApp/       # Desktop application (JVM)
+├── core/                 # Shared code across ALL targets (Client + Server)
+└── server/               # Server-side module, might be divided into several sub-modules where needed.
 ```
 
-Most of the code usually belongs to `shared/`. 
+- **`:core`**: Contains pure Kotlin logic, models, and utilities shared between the backend and all frontend apps, such as RequestDTOs and ResponseDTOs.
+- **`:app:shared`**: Contains the majority of the UI (Compose) and frontend business logic within submodules, including data, features, navigation, dependency injection, use cases, etc.
 
-### Recommended sub-modules Layout
+### Recommended multiplatform sub-modules Layout (i.e. within :app:shared)
 
 ```
-platform-module/          # A main platform app module (e.g. :shared, :app-android, :app-iOS, :app-desktop, usually we will work on :shared)
-├── app/                  # Sub-module: Application entry point (where needed), Application specific code (e.g. Android's Application class, MainActivity, etc)
+platform-module/          # A main platform app module. Usually :app:shared or :core 
+├── app/                  # Sub-module: Application starting point. Glues all the other submodules, host main navigation and wires up DI from the di/ module.
 ├── di/                   # Sub-module: Dependency injection modules and wiring (using Koin)
 ├── core/                 # Sub-module: Reusable utilities, base classes, error types, shared utility extensions,
 ├── domain/               # Sub-module: Reusable UseCases, domain models, repository interfaces
@@ -63,6 +66,8 @@ platform-module/          # A main platform app module (e.g. :shared, :app-andro
         ├── data/
         ├── components/
         └── utils/     
+    └── ...               # etc...
+        
 ```
 
 ### Dependency Rules
@@ -73,10 +78,18 @@ The dependency graph across module should follow this pattern:
 app → di, core, domain, data, ui, [features].
 domain → core.
 data → domain, core.
-core → (nothing).
-ui → core.
-[features] → ui, domain, core.
-```
+
+The dependency graph should respect these boundaries:
+
+1.  **Cross-Tier**: `app:shared` → `core`, `server` → `core`.
+2.  **Internal**:
+    - `app:*` modules → `app:shared:*`. // as needed.
+    - `app:shared:app` → `di`, `ui`, `core`, `domain`, `data`.
+    - `domain` → `core`.
+    - `data` → `domain`, `core`.
+    - `ui` → `domain`, `core` (for state/models and utilities).
+    - `app:shared:feature:*` → `domain`, `core`, `ui`.
+    - `di` → `app:shared:feature:*`, `core`, `domain`, `data`.
 
 **Critical**: Only depend on modules when they are really required (e.g. data needs domain to implement the interfaces)
 
@@ -319,10 +332,6 @@ private fun login(provider: CustomAuthProvider, email: String?, password: String
 }
 ```
 
-## Convention Plugins (Gradle)
-
-Use convention plugins to reduce build file code duplication:
-
 ## Anti-Patterns to Avoid
 
 - Importing Android framework or platform specific classes in `domain` — keep it pure Kotlin
@@ -335,4 +344,5 @@ Use convention plugins to reduce build file code duplication:
 
 ## References
 
-See skill: `compose-multiplatform-patterns` for UI patterns.
+- See skill: `compose-multiplatform-patterns` for UI patterns.
+- See `README.md` for platform-specific run commands.
