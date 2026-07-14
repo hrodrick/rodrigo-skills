@@ -332,6 +332,13 @@ private fun login(provider: CustomAuthProvider, email: String?, password: String
 }
 ```
 
+## Gradle Convention Plugins
+
+Use convention plugins to reduce build file duplication by having an included build (commonly named build-logic/)
+Any .gradle.kts script file in src/main/kotlin/ of the plugin build (build-logic/) becomes a precompiled script plugin, and its file name defines the plugin ID.
+
+For more information, refer to https://docs.gradle.org/current/userguide/implementing_gradle_plugins_convention.html
+
 ## Anti-Patterns to Avoid
 
 - Importing Android framework or platform specific classes in `domain` — keep it pure Kotlin
@@ -346,3 +353,4 @@ private fun login(provider: CustomAuthProvider, email: String?, password: String
 
 - See skill: `compose-multiplatform-patterns` for UI patterns.
 - See `README.md` for platform-specific run commands.
+- See [Gradle Plugins Convention online docs](https://docs.gradle.org/current/userguide/implementing_gradle_plugins_convention.html)
