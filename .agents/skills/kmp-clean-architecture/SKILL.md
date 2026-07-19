@@ -1,7 +1,6 @@
 ---
 name: kmp-clean-architecture
 description: Clean Architecture patterns for Kotlin Multiplatform projects — module structure, dependency rules, UseCases, Repositories, and data layer patterns. Use when creating or modifying Kotlin or Gradle code for any platform or in general.
-origin: ECC
 ---
 
 # Kotlin Multiplatform Clean Architecture
@@ -21,77 +20,76 @@ Clean Architecture patterns for Kotlin Multiplatform projects. Covers module bou
 ### Current Project Layout
 
 ```
-project/                  # Root project
-├── app/                  # Frontend/Client application container
-│   ├── shared/           # Primary code container, Shared across each platform, and divided into several sub-modules
-│   ├── androidApp/       # Android application module
-│   ├── iosApp/           # iOS application (SwiftUI entry point)
-│   ├── webApp/           # Web application (Wasm/JS)
-│   └── desktopApp/       # Desktop application (JVM)
-├── core/                 # Shared code across ALL targets (Client + Server)
-└── server/               # Server-side module, might be divided into several sub-modules where needed.
+project/                   # Root project
+│── shared/                # Primary multiplatform code module, Shared across each frontend platform, and divided into a well defined package structure.
+|   ├── commonMain         # Common code shared across all platforms.
+|   ├── commonTest         # Common code unit tests.
+|   ├── androidMain        # Android platform-specific code within shared.
+|   ├── androidHostTest    # Android unit tests within shared.
+|   ├── iosMain            # iOS platform-specific code within shared.
+|   └── ...
+│── androidApp/            # Android application module (Android entry point and settings)
+│── iosApp/                # iOS application (Swift entry point and settings)
+│── webApp/                # Web application (Wasm/JS)
+│── desktopApp/            # Desktop application (JVM)
+└── server/                # Optional: Backend server-side module.
 ```
 
-- **`:core`**: Contains pure Kotlin logic, models, and utilities shared between the backend and all frontend apps, such as RequestDTOs and ResponseDTOs.
-- **`:app:shared`**: Contains the majority of the UI (Compose) and frontend business logic within submodules, including data, features, navigation, dependency injection, use cases, etc.
+- **`:shared`**: Contains the majority of the UI (Compose) code and the frontend business logic within packages, including data, features, navigation, dependency injection, use cases, etc.
 
-### Recommended multiplatform sub-modules Layout (i.e. within :app:shared)
+### Multiplatform package Layout (i.e. within :shared)
 
 ```
-platform-module/          # A main platform app module. Usually :app:shared or :core 
-├── app/                  # Sub-module: Application starting point. Glues all the other submodules, host main navigation and wires up DI from the di/ module.
-├── di/                   # Sub-module: Dependency injection modules and wiring (using Koin)
-├── core/                 # Sub-module: Reusable utilities, base classes, error types, shared utility extensions,
-├── domain/               # Sub-module: Reusable UseCases, domain models, repository interfaces
-├── data/                 # Sub-module: Reusable Repository implementations, DataSources, DB, network
-├── ui/                   # Sub-module: Reusable Compose components, theme, typography, Modifier extensions
-└── feature/              # Folder: Feature sub-modules (usually 1 per high-level screen)
-    ├── login/            # Sub-module: Login screen feature (signin screen, signup screen, Modals, etc. ViewModels, UI Models for login screens)
-    |   ├── domain/       # Folder: Feature specific UseCases, domain models, repository interfaces
-    |   ├── data/         # Folder: Feature specific Repository implementations, DataSources, DB, network
-    |   ├── components/   # Folder: Smaller component composables
-    |   └── utils/        # Folder: Feature-specific utilities (e.g. extensions, internal reusable code, etc)
-    ├── settings/         # Sub-module: Settings screen feature
+app-module/               # A main app module. Usually ":shared". The following folders lie within the platform folder (androidMain, commonMain, iosMain, etc. we work primarily in commonMain).
+├── app/                  # Contains application starting points. Glues all the other submodules, host main navigation and wires up DI from the di/ package.
+├── di/                   # Dependency injection modules and wiring (using Koin)
+├── core/                 # Reusable utilities, base classes, error types, shared utility extensions,
+├── domain/               # Reusable UseCases, domain models, repository interfaces
+├── data/                 # Reusable Repository implementations, DataSources, DB, network
+├── ui/                   # Reusable Compose components, theme, typography, Modifier extensions
+└── feature/              # Feature packages container (usually 1 feature per high-level screen)
+    ├── login/            # Feature: Login screen feature (signin screen, signup screen, Modals, etc. ViewModels, UI Models for login screens)
+    |   ├── domain/       # Feature specific UseCases, domain models, repository interfaces
+    |   ├── data/         # Feature specific Repository implementations, DataSources, DB, network
+    |   ├── components/   # Smaller component composables
+    |   └── utils/        # Feature-specific utilities (e.g. extensions, internal reusable code, etc)
+    ├── settings/         # Feature: Settings screen feature
     |   ├── domain/
     |   ├── data/
     |   ├── components/
     |   └── utils/     
-    ├── profile/          # Sub-module: User profile screen feature
+    ├── profile/          # Feature: User profile screen feature
     |   ├── domain/
     |   ├── data/
     |   ├── components/
     |   └── utils/     
-    └── home/             # Sub-module: Home screen feature
-        ├── domain/
-        ├── data/
-        ├── components/
-        └── utils/     
+    └── home/             # Feature: Home screen feature
+    |   ├── domain/
+    |   ├── data/
+    |   ├── components/
+    |   └── utils/     
     └── ...               # etc...
         
 ```
 
 ### Dependency Rules
 
-The dependency graph across module should follow this pattern:
-
-```
-app → di, core, domain, data, ui, [features].
-domain → core.
-data → domain, core.
-
 The dependency graph should respect these boundaries:
 
-1.  **Cross-Tier**: `app:shared` → `core`, `server` → `core`.
-2.  **Internal**:
-    - `app:*` modules → `app:shared:*`. // as needed.
-    - `app:shared:app` → `di`, `ui`, `core`, `domain`, `data`.
+1.  **Cross-Tier**: `specific platform modules (androidApp, iOSApp, etc.)` → `:shared`.
+2.  **Internal within shared/platform**:
     - `domain` → `core`.
     - `data` → `domain`, `core`.
-    - `ui` → `domain`, `core` (for state/models and utilities).
-    - `app:shared:feature:*` → `domain`, `core`, `ui`.
-    - `di` → `app:shared:feature:*`, `core`, `domain`, `data`.
+    - `ui` → `domain`, `core`.
+    - `shared:feature:*` → `domain`, `core`, `ui`.
+    - `di` → `shared:feature:*`, `core`, `domain`, `data`.
+    - `app` → `di`, `ui`, `core`, `domain`, `data`.
 
-**Critical**: Only depend on modules when they are really required (e.g. data needs domain to implement the interfaces)
+**Critical**: Only depend on other packages when they are really required (e.g. data needs domain to implement the interfaces)
+
+### Package name
+
+- TODO: Insert project's package name here.
 
 ## Domain Layer
 
