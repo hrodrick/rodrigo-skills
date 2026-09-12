@@ -1,17 +1,23 @@
 {
   "version": 1,
   "skills": {
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "b146008599c31057cef1c145774cea5d5afb30e8f43fa802e47a4b461419aaaf"
+    },
+    "i-have-adhd": {
+      "source": "ayghri/i-have-adhd",
+      "sourceType": "github",
+      "skillPath": "skills/i-have-adhd/SKILL.md",
+      "computedHash": "ff5ac62815dc9c74709333f433e667ea76215126afb628e7dd8e021758a9e3a7"
+    },
     "kmp-clean-architecture": {
       "source": "affaan-m/everything-claude-code",
       "sourceType": "github",
       "skillPath": "skills/kmp-clean-architecture/SKILL.md",
       "computedHash": "877b63dfe31ec4d864c0a09ead442029a236def32fd2a7fd374083a27b4fa5ba"
-    },
-    "compose-multiplatform-patterns": {
-      "source": "affaan-m/everything-claude-code",
-      "sourceType": "github",
-      "skillPath": "skills/compose-multiplatform-patterns/SKILL.md",
-      "computedHash": "bb1c2a3397b144a0a5ac4f6c4bcb44514ec52a7020becd794eeceb62eee69b0d"
     },
     "supabase": {
       "source": "supabase/agent-skills",
